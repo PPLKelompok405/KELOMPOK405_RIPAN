@@ -60,4 +60,12 @@ class AuthController extends Controller
             "password" => "required|string|max:255"
         ]);
     }
+
+    public function logout(Request $request) {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json([
+            "status" => "success",
+            "message" => "Logout successfully"
+        ]);
+    }
 }

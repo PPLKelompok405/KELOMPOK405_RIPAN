@@ -95,4 +95,35 @@ describe("Authentication", function () {
             expect($response->status())->toBe(401);
         });
     });
+
+    describe("Logout", function () {
+        it("Should return 401 if access token not sended", function () {
+            $response = $this->withHeaders(["accept" => "application/json"])->post("/api/auth/logout");
+
+            expect($response->status())->toBe(401);
+        });
+
+        it("Should delete current token when user logout", function () {
+            $loginPayload = [
+                "email" => "knownEmail@gmail.com",
+                "password" => "password"
+            ];
+            $user = User::factory()->create([
+                ...$loginPayload,
+                "name" => "mock name",
+                "role" => "penerima"
+            ]);
+            $token = $user->createToken("access-token")->plainTextToken;
+           $response = $this->withHeaders([
+            "Authorization" => "Bearer " . $token,
+            "accept" => "application/json"
+           ])->post("/api/auth/logout");
+
+           $tokenExist = $user->tokens()->where("name", "access-token")->first();
+
+           expect($response->status())->toBe(200);
+           expect($tokenExist)->toBeNull();
+        });
+
+    });
 });
