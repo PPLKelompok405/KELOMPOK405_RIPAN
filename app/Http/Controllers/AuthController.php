@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\UserRole;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
@@ -30,6 +31,33 @@ class AuthController extends Controller
             "email" => "email|max:255|required",
             "password" => "required|string|max:255",
             "role" => Rule::enum(UserRole::class)
+        ]);
+    }
+
+    public function login (Request $request) {
+        $validatedData = $this->validateLoginInput($request);
+
+        $userExistOnDatabase = User::where("email", $validatedData["email"])->first();
+        abort_if(!$userExistOnDatabase, 404, "User not found");
+        $isPasswordMatch = Hash::check($validatedData["password"], $userExistOnDatabase->password);
+        abort_if(!$isPasswordMatch, 401, "Credential not match");
+
+        $token = $userExistOnDatabase->createToken("access-token");
+
+        return response()->json([
+            "status" => "success",
+            "message" => "Login success",
+            "data" => [
+                "accessToken" => $token->plainTextToken
+            ]
+            ]);
+
+    }
+
+    private function validateLoginInput(Request $request) {
+        return $request->validate([
+            "email" => "email|required",
+            "password" => "required|string|max:255"
         ]);
     }
 }
