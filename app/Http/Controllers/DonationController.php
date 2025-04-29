@@ -14,8 +14,18 @@ class DonationController extends Controller implements HasMiddleware
 
     public static function middleware() {
         return [
-            new Middleware("auth:sanctum", except: ["index"])
+            new Middleware("auth:sanctum", except: ["index", "show"])
         ];
+    }
+
+    public function index() {
+        $donations = Donation::all();
+
+        return response()->json([
+            "status" => "Success",
+            "message" => "Donations retrieved",
+            "data" => $donations
+        ]);
     }
 
     public function store(Request $request) {
@@ -41,8 +51,12 @@ class DonationController extends Controller implements HasMiddleware
         ]);
     }
 
-    public function show() {
-
+    public function show(Request $request, Donation $donation) {
+        return response()->json([
+            "status" => "Success",
+            "message" => "Donation retrieved",
+            "data" => $donation
+        ]);
     }
 
     public function update(Request $request, $id) { }
